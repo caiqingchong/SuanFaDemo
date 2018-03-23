@@ -11,6 +11,7 @@
 @interface ViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (nonatomic,retain) UITableView *sfTableView;
 @property(nonatomic,retain) NSArray *arr;
+@property (nonatomic,retain) NSMutableArray *tempArr;
 @end
 
 @implementation ViewController
@@ -24,7 +25,7 @@
     
     [self.view addSubview:self.sfTableView];
     
-    self.arr = @[@"选择排序",@"冒泡排序",@"插入排序",@"快速排序",@"双路快速排序",@"三路快速排序",@"堆排序"];
+    self.arr = @[@"选择排序",@"冒泡排序",@"插入排序",@"快速排序",@"堆排序",@"归并排序",@"折半插入排序"];
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -50,8 +51,7 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     NSLog(@"选择算法为：%@",self.arr[indexPath.row]);
-    NSMutableArray *arr_M = [NSMutableArray arrayWithObjects:@8,@4,@2,@3,@3,@5,@7,nil];
-      NSMutableArray *array = [NSMutableArray arrayWithObjects:@9,@2,@10,@7,@3,@7,@4,nil];
+      NSMutableArray *arr_M = [NSMutableArray arrayWithObjects:@9,@2,@10,@7,@3,@7,@4,nil];
     switch (indexPath.row) {
         case 0:
             [self selectPaiXu];
@@ -63,15 +63,10 @@
             [self insertPaiXu];
             break;
         case 3:
-//           NSLog(@"快速排序完成后的数据为：%@",[self QuickSorkOC:arr_M Count:arr_M.count]);
-            
-            //把Integer转化成int格式
-//            int high = (int)arr_M.count-1;
-         
             [self quickSort:arr_M low:0 high:6];
             break;
         case 4:
-
+            [self duiPaiXu];
             break;
         case 5:
 
@@ -220,6 +215,72 @@
         [self quickSort:array low:i high:high];
     }
 }
+
+
+/*
+ 堆排序思想：
+ 堆的定义：一个完全二叉树中，任意父结点总是大于或等于（小于或等于）任何一个子节点，则为大顶堆（小顶堆）。
+
+ */
+- (void)duiPaiXu{
+    
+    NSMutableArray *dataArr = [NSMutableArray arrayWithObjects:@1,@19,@2,@65,@876,@0,@63,@-1,@87,@100,@-5,@100,@333, nil];
+    
+    /*
+     从最后一个非叶子节点开始 自下而上进行调整堆（将以i为根节点的二叉树通过筛选调整为堆）
+    
+     */
+    for (NSInteger i=(dataArr.count/2-1); i >= 0; --i) {
+        NSLog(@"-----------子叶节点：%ld",(long)i);
+        dataArr = [self maxHeapAdjust:dataArr index:i length:dataArr.count] ;
+    }
+    
+    NSInteger num = dataArr.count;
+    /*
+     剩余的元素个数不为1时则继续调整，取出元素。取出的元素放在最后的一个节点。然后减小堆的元素的个数。所以大顶堆排序出来的是升序的。
+     */
+    while (num > 1) {
+        [dataArr exchangeObjectAtIndex:0 withObjectAtIndex:num-1];
+        dataArr=[self maxHeapAdjust:dataArr index:0 length:num-1];
+        num--;
+    }
+    NSLog(@"堆排序-----%@",dataArr);
+
+}
+
+- (NSMutableArray*)maxHeapAdjust:(NSMutableArray *)array index:(NSInteger)index length:(NSInteger)length {
+    NSInteger leftChildIndex =index*2+1;//获取该节点的左子节点索引
+    NSInteger rightChildIndex=index*2+2;//获取该节点的右子节点索引
+    NSInteger maxValueIndex=index;//暂时把该索引当做最大值所对应的索引
+
+    NSLog(@"index------:%ld------leftChildIndex:%ld-------rightChildIndex:%ld",index,leftChildIndex,rightChildIndex);
+    // leftChildIndex < length
+    // 判断左子节点的值是否大于当前最大值  length是数组的长度
+    if (leftChildIndex < length && [array[leftChildIndex] integerValue] > [array[maxValueIndex] integerValue]) {
+        //把左子节点的索引作为最大值所对应的索引
+        maxValueIndex=leftChildIndex;
+    }
+    // rightChildIndex < length
+    // 判断右边子节点的值是否大于当前最大值
+    if (rightChildIndex < length && [array[rightChildIndex] integerValue] > [array[maxValueIndex] integerValue]) {
+        maxValueIndex=rightChildIndex;
+    }
+    
+    //如果该节点不是最大值所在的节点 则将其和最大值节点进行交换
+    if (maxValueIndex != index) {
+        [array exchangeObjectAtIndex:maxValueIndex withObjectAtIndex:index];
+        NSLog(@"调整节点之后的数组为：%@",array);
+        //递归向下调整，此时maxValueIndex索引所对应的值是 刚才的父节点。
+        array=[self maxHeapAdjust:array index:maxValueIndex length:length];
+    }
+    return array;
+}
+
+
+
+
+
+
 
 
 - (void)didReceiveMemoryWarning {
